@@ -13,6 +13,7 @@ import {
   IonButton,
 } from "@ionic/react";
 import React, { useContext, useState } from "react";
+import { BarcodeScanner } from "@ionic-native/barcode-scanner";
 import shortId from "shortid";
 
 import styles from "./Create.module.scss";
@@ -39,6 +40,13 @@ const Create: React.FC<RouteComponentProps> = ({ history }) => {
     }
   };
 
+  const scan = async () => {
+    const data = await BarcodeScanner.scan();
+    const splitted = data.text.split("////");
+    setServerName(splitted[0]);
+    setAddress(splitted[1]);
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -52,6 +60,12 @@ const Create: React.FC<RouteComponentProps> = ({ history }) => {
       <IonContent fullscreen>
         <div className={styles.formContainer}>
           <IonList className={styles.lineInput}>
+            <div className={styles.btnContainer}>
+              <IonButton onClick={scan}>Scan server qr Code</IonButton>
+            </div>
+            <div className={styles.btnContainer}>
+              <h4>Or fill the fields manually</h4>
+            </div>
             <IonLabel position="stacked">Server Name:</IonLabel>
             <IonItem lines="none">
               <IonInput
