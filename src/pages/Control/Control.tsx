@@ -14,13 +14,19 @@ import { Redirect } from "react-router";
 import { useGesture } from "react-use-gesture";
 
 import { SocketIoContext } from "../../contexts/SocketContext";
-import { detectDrag, tap } from "../../services/DetectGestures";
+import {
+  detectDrag,
+  detectVerticalSwipe,
+  tap,
+} from "../../services/DetectGestures";
 
 import styles from "./Control.module.scss";
 
 const Control = () => {
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
+  const [previousY, setPreviousY] = useState(0);
+  const [triggerY, setTriggerY] = useState(0);
 
   const { disconnect, connectedToServer } = useContext(SocketIoContext);
 
@@ -35,6 +41,17 @@ const Control = () => {
       onDragStart: (state) => {
         setStartX(state.movement[0]);
         setStartY(state.movement[1]);
+        setPreviousY(state.movement[1]);
+        setTriggerY(state.movement[1]);
+      },
+      onDrag: (state) => {
+        detectVerticalSwipe(
+          state.movement[1],
+          triggerY,
+          previousY,
+          setTriggerY,
+          setPreviousY
+        );
       },
       onDragEnd: (state) => {
         detectDrag(state.movement[0], state.movement[1], startX, startY);
@@ -44,7 +61,10 @@ const Control = () => {
       },
     },
     {
-      drag: { lockDirection: true },
+      drag: {
+        lockDirection: true,
+        filterTaps: true,
+      },
     }
   );
 
@@ -62,7 +82,7 @@ const Control = () => {
       <IonContent fullscreen>
         <div className={styles.controlArea} {...bind()}></div>
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
-          <IonFabButton onClick={quit}>
+          <IonFabButton onClick={quit} color="danger">
             <IonIcon icon={logOutOutline} />
           </IonFabButton>
         </IonFab>
