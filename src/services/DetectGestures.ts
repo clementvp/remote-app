@@ -1,26 +1,13 @@
 import { emitControl } from "./SocketService";
 export const horizontalSwipe = (endX: Number, startX: Number) => {
   if (endX > startX) {
-    console.log("next");
     emitControl("audio/next");
   } else {
-    console.log("prev");
     emitControl("audio/prev");
   }
 };
 
-export const verticalSwipe = (endY: Number, startY: Number) => {
-  if (endY > startY) {
-    console.log("vol down");
-    emitControl("audio/vol/down");
-  } else {
-    console.log("vol up");
-    emitControl("audio/vol/up");
-  }
-};
-
 export const tap = () => {
-  console.log("play/pause");
   emitControl("audio/pause");
 };
 
@@ -33,8 +20,32 @@ export const detectDrag = (
   if (endY === 0) {
     horizontalSwipe(endX, startX);
   }
+};
 
-  if (endX === 0) {
-    verticalSwipe(endY, startY);
+export const detectVerticalSwipe = (
+  y: number,
+  triggerY: number,
+  previousY: number,
+  setTriggerY: (value: React.SetStateAction<number>) => void,
+  setPreviousY: (value: React.SetStateAction<number>) => void
+) => {
+  const diff = previousY - y;
+
+  if (diff < 0) {
+    const diff = y - triggerY;
+    if (diff > 30) {
+      emitControl("audio/vol/down");
+      setTriggerY(y);
+    }
   }
+
+  if (diff > 0) {
+    const diff = triggerY - y;
+    if (diff > 30) {
+      emitControl("audio/vol/up");
+      setTriggerY(y);
+    }
+  }
+
+  setPreviousY(y);
 };
