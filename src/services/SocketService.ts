@@ -38,3 +38,7 @@ export const disconnectSocket = () => {
 export const emitControl = (message: string) => {
   if (socket) socket.emit(message);
 };
+
+export const getSocketStatus = () => {
+  if (socket) return socket.connected;
+};
