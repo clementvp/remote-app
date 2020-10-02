@@ -20,6 +20,7 @@ const setStorage = async (result: string | undefined) => {
         list: [],
       }),
     });
+    resetActiveConnexion();
   }
 };
 
@@ -42,6 +43,32 @@ const addServer = async (id: string, name: string, address: string) => {
   });
 };
 
+const retrieveActiveConnexion = async () => {
+  const ret = await Storage.get({ key: "remoteAppActiveConnexion" });
+  if (ret.value) {
+    const value = JSON.parse(ret.value);
+    return value.connexion;
+  }
+};
+
+const resetActiveConnexion = async () => {
+  await Storage.set({
+    key: "remoteAppActiveConnexion",
+    value: JSON.stringify({
+      connexion: "",
+    }),
+  });
+};
+
+const addActiveConnexion = async (address: string) => {
+  await Storage.set({
+    key: "remoteAppActiveConnexion",
+    value: JSON.stringify({
+      connexion: address,
+    }),
+  });
+};
+
 const removeServer = async (id: string) => {
   const servers = serverList.filter((element: ServerItem) => {
     return element.id !== id;
@@ -56,4 +83,11 @@ const removeServer = async (id: string) => {
 };
 
 export default checkStorage;
-export { retrieveStorage, addServer, removeServer };
+export {
+  retrieveStorage,
+  addServer,
+  removeServer,
+  addActiveConnexion,
+  resetActiveConnexion,
+  retrieveActiveConnexion,
+};

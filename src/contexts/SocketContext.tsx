@@ -24,22 +24,22 @@ export const SocketIoProvider = ({ children }: any) => {
   useEffect(() => {
     if (initiatedConnection) {
       setLoading(true);
-      subscribeToServer(() => {
-        setConnectedToServer(true);
-        setLoading(false);
-      });
-      subscribeToDisconnectServer(() => {
-        setLoading(false);
-        setConnectedToServer(false);
-        setInitiatedConnection(false);
-      });
-      subscribeToConnexionError(() => {
-        setLoading(false);
-        setConnectedToServer(false);
-        setInitiatedConnection(false);
-      });
     }
-  }, [connectedToServer, initiatedConnection]);
+    subscribeToServer(() => {
+      setConnectedToServer(true);
+      setLoading(false);
+    });
+    subscribeToDisconnectServer(() => {
+      setLoading(false);
+      setConnectedToServer(false);
+      setInitiatedConnection(false);
+    });
+    subscribeToConnexionError(() => {
+      setLoading(false);
+      setConnectedToServer(false);
+      setInitiatedConnection(false);
+    });
+  }, [initiatedConnection]);
 
   const init = (address: string) => {
     initSocket(address);
