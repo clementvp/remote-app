@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import checkStorage, {
   addServer,
   removeServer,
-  retrieveStorage,
+  retrieveServerList,
 } from "../services/StorageService";
 import { ServerItem } from "../types/ServerItem";
 
@@ -12,13 +12,29 @@ type ContextProps = {
   deleteServer: (id: string) => Promise<void>;
 };
 
-export const ServerContext = React.createContext<Partial<ContextProps>>({});
+export const ServerContext = React.createContext<ContextProps>({
+  serverList: [],
+  createServer: () => {
+    return new Promise((resolve, reject) => {});
+  },
+  deleteServer: () => {
+    return new Promise((resolve, reject) => {});
+  },
+});
 
 export const ServerProvider = ({ children }: any) => {
   const [serverList, setServerList] = useState<Array<ServerItem>>([]);
 
-  const retrieveServersList = async () => {
-    const list = await retrieveStorage();
+  useEffect(() => {
+    const fn = async () => {
+      await checkStorage();
+      await getServerList();
+    };
+    fn();
+  }, []);
+
+  const getServerList = async () => {
+    const list = await retrieveServerList();
     if (list) {
       setServerList(list);
     }
@@ -26,21 +42,13 @@ export const ServerProvider = ({ children }: any) => {
 
   const createServer = async (id: string, name: string, address: string) => {
     await addServer(id, name, address);
-    await retrieveServersList();
+    await getServerList();
   };
 
   const deleteServer = async (id: string) => {
     await removeServer(id);
-    await retrieveServersList();
+    await getServerList();
   };
-
-  useEffect(() => {
-    const fn = async () => {
-      await checkStorage();
-      await retrieveServersList();
-    };
-    fn();
-  }, []);
 
   return (
     <ServerContext.Provider value={{ serverList, createServer, deleteServer }}>
