@@ -1,3 +1,4 @@
+import React, { useContext, useState } from "react";
 import {
   IonPage,
   IonHeader,
@@ -9,32 +10,37 @@ import {
   IonIcon,
 } from "@ionic/react";
 import { logOutOutline } from "ionicons/icons";
-import React, { useContext, useState } from "react";
+import { useEffectOnce } from "react-use";
 import { Redirect } from "react-router";
 import { useGesture } from "react-use-gesture";
-
 import { SocketIoContext } from "../../contexts/SocketContext";
 import {
   detectDrag,
   detectVerticalSwipe,
   tap,
 } from "../../services/DetectGestures";
+import {
+  disconnectSocket,
+  subscribeToDisconnectServer,
+} from "../../services/SocketService";
+
+import { resetStorageLastConnexion } from "../../services/StorageService";
 
 import styles from "./Control.module.scss";
 
-const Control = () => {
+const Control: React.FC = () => {
+  const { connected, setConnected } = useContext(SocketIoContext);
+
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
   const [previousY, setPreviousY] = useState(0);
   const [triggerY, setTriggerY] = useState(0);
 
-  const { disconnect, connectedToServer } = useContext(SocketIoContext);
-
-  const quit = () => {
-    if (disconnect) {
-      disconnect();
-    }
-  };
+  useEffectOnce(() => {
+    subscribeToDisconnectServer(() => {
+      setConnected(false);
+    });
+  });
 
   const bind = useGesture(
     {
@@ -68,7 +74,12 @@ const Control = () => {
     }
   );
 
-  if (!connectedToServer) {
+  const quit = async () => {
+    await resetStorageLastConnexion();
+    disconnectSocket();
+  };
+
+  if (!connected) {
     return <Redirect to="/home"></Redirect>;
   }
 
@@ -82,7 +93,7 @@ const Control = () => {
       <IonContent fullscreen>
         <div className={styles.controlArea} {...bind()}></div>
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
-          <IonFabButton onClick={quit} color="danger">
+          <IonFabButton color="danger" onClick={quit}>
             <IonIcon icon={logOutOutline} />
           </IonFabButton>
         </IonFab>

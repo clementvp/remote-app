@@ -1,59 +1,20 @@
-import React, { useEffect, useState } from "react";
-import {
-  initSocket,
-  subscribeToDisconnectServer,
-  subscribeToServer,
-  subscribeToConnexionError,
-  disconnectSocket,
-} from "../services/SocketService";
+import React, { useState } from "react";
 
 type ContextProps = {
-  init: (address: string) => void;
-  disconnect: () => void;
-  connectedToServer: boolean;
-  loading: boolean | undefined;
+  connected: boolean;
+  setConnected: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const SocketIoContext = React.createContext<Partial<ContextProps>>({});
+export const SocketIoContext = React.createContext<ContextProps>({
+  connected: false,
+  setConnected: () => {},
+});
 
 export const SocketIoProvider = ({ children }: any) => {
-  const [initiatedConnection, setInitiatedConnection] = useState(false);
-  const [connectedToServer, setConnectedToServer] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (initiatedConnection) {
-      setLoading(true);
-    }
-    subscribeToServer(() => {
-      setConnectedToServer(true);
-      setLoading(false);
-    });
-    subscribeToDisconnectServer(() => {
-      setLoading(false);
-      setConnectedToServer(false);
-      setInitiatedConnection(false);
-    });
-    subscribeToConnexionError(() => {
-      setLoading(false);
-      setConnectedToServer(false);
-      setInitiatedConnection(false);
-    });
-  }, [initiatedConnection]);
-
-  const init = (address: string) => {
-    initSocket(address);
-    setInitiatedConnection(true);
-  };
-
-  const disconnect = () => {
-    disconnectSocket();
-  };
+  const [connected, setConnected] = useState(false);
 
   return (
-    <SocketIoContext.Provider
-      value={{ init, connectedToServer, loading, disconnect }}
-    >
+    <SocketIoContext.Provider value={{ connected, setConnected }}>
       {children}
     </SocketIoContext.Provider>
   );

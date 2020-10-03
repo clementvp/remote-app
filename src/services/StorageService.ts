@@ -6,13 +6,17 @@ let serverList: Array<ServerItem> = [];
 
 const checkStorage = async () => {
   const { keys } = await Storage.keys();
-  const find = keys.find((element) => {
+  const findServerList = keys.find((element) => {
     return element === "remoteApp";
   });
-  await setStorage(find);
+  const findLastConnexion = keys.find((element) => {
+    return element === "remoteAppLastConnexion";
+  });
+  await setStorageServer(findServerList);
+  await setStorageLastConnexion(findLastConnexion);
 };
 
-const setStorage = async (result: string | undefined) => {
+const setStorageServer = async (result: string | undefined) => {
   if (!result) {
     await Storage.set({
       key: "remoteApp",
@@ -20,11 +24,47 @@ const setStorage = async (result: string | undefined) => {
         list: [],
       }),
     });
-    resetActiveConnexion();
   }
 };
 
-const retrieveStorage = async () => {
+const setStorageLastConnexion = async (result: string | undefined) => {
+  if (!result) {
+    await Storage.set({
+      key: "remoteAppLastConnexion",
+      value: JSON.stringify({
+        connexion: "",
+      }),
+    });
+  }
+};
+
+const resetStorageLastConnexion = async () => {
+  await Storage.set({
+    key: "remoteAppLastConnexion",
+    value: JSON.stringify({
+      connexion: "",
+    }),
+  });
+};
+
+const addStorageLastConnexion = async (address: string) => {
+  await Storage.set({
+    key: "remoteAppLastConnexion",
+    value: JSON.stringify({
+      connexion: address,
+    }),
+  });
+};
+
+const retrieveStorageLastConnexion = async () => {
+  const ret = await Storage.get({ key: "remoteAppLastConnexion" });
+  if (ret.value) {
+    const value = JSON.parse(ret.value);
+    return value.connexion;
+  }
+};
+
+const retrieveServerList = async () => {
   const ret = await Storage.get({ key: "remoteApp" });
   if (ret.value) {
     const value = JSON.parse(ret.value);
@@ -39,32 +79,6 @@ const addServer = async (id: string, name: string, address: string) => {
     key: "remoteApp",
     value: JSON.stringify({
       list: serverList,
-    }),
-  });
-};
-
-const retrieveActiveConnexion = async () => {
-  const ret = await Storage.get({ key: "remoteAppActiveConnexion" });
-  if (ret.value) {
-    const value = JSON.parse(ret.value);
-    return value.connexion;
-  }
-};
-
-const resetActiveConnexion = async () => {
-  await Storage.set({
-    key: "remoteAppActiveConnexion",
-    value: JSON.stringify({
-      connexion: "",
-    }),
-  });
-};
-
-const addActiveConnexion = async (address: string) => {
-  await Storage.set({
-    key: "remoteAppActiveConnexion",
-    value: JSON.stringify({
-      connexion: address,
     }),
   });
 };
@@ -84,10 +98,10 @@ const removeServer = async (id: string) => {
 
 export default checkStorage;
 export {
-  retrieveStorage,
+  retrieveServerList,
   addServer,
   removeServer,
-  addActiveConnexion,
-  resetActiveConnexion,
-  retrieveActiveConnexion,
+  addStorageLastConnexion,
+  retrieveStorageLastConnexion,
+  resetStorageLastConnexion,
 };
